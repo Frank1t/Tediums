@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -11,6 +11,11 @@
             color: white;
             margin: 0;
             padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-weight: bold;
         }
 
         #fileList {
@@ -40,308 +45,205 @@
             font-size: 24px;
             width: 50px;
             height: 50px;
-            background-color: #fff; /* Change to your desired color */
+            background-color: #fff; /* Button color */
             border: none;
-            border-radius: 50%; /* Circle button */
+            border-radius: 50%; /* Circular button */
             position: fixed;
             bottom: 20px;
             left: 20px;
             cursor: pointer;
         }
 
+        /* Modal for Upload Options */
         .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1000; /* Sit on top */
+            display: none;
+            position: fixed;
+            z-index: 1000;
             left: 0;
             top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgb(0,0,0); /* Fallback color */
-            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            justify-content: center;
+            align-items: center;
         }
 
         .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto; /* 15% from the top and centered */
+            background-color: #333;
             padding: 20px;
-            border: 1px solid #888;
-            width: 80%; /* Could be more or less, depending on screen size */
+            border-radius: 8px;
+            text-align: center;
         }
 
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
+        .modal-content button {
+            margin: 5px;
+            padding: 10px;
+            background-color: #555;
+            color: white;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
         }
 
-        .scrolling-text {
+        /* Toast Notifications */
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 2px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            bottom: 30px;
+            font-size: 17px;
+        }
+
+        .toast.show {
+            visibility: visible;
+            animation: fadeInOut 3s;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* Scrolling Info Message */
+        .scrollingInfo {
             background-color: red;
             color: white;
+            text-align: center;
             padding: 10px;
-            white-space: nowrap;
-            overflow: hidden;
-            box-shadow: 0 0 10px #fff;
-        }
-
-        #notification {
-            display: none;
-            margin-top: 10px;
-            color: green;
-        }
-
-        #filePreview {
-            display: none;
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            color: black;
-            padding: 20px;
-            z-index: 1001;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-        }
-
-        #chatbotButton {
-            display: none; /* Initially hidden */
-            position: fixed;
-            bottom: 80px;
-            left: 20px;
-            background-color: #fff;
-            border: none;
-            border-radius: 50%; /* Circle button */
-            width: 50px;
-            height: 50px;
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        #chatbotModal {
-            display: none; /* Initially hidden */
-            position: fixed;
-            top: 20%;
-            left: 30%;
-            width: 40%;
-            height: 60%;
-            background-color: white;
-            color: black;
-            border: 1px solid #888;
-            z-index: 1001;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-        }
-
-        #chatbotMessages {
-            height: 400px;
-            overflow-y: auto;
-            border: 1px solid black;
-            padding: 10px;
-        }
-
-        #chatbotInput {
             width: 100%;
-            padding: 10px;
+            top: 0;
+            z-index: 100;
+            animation: scrollText 15s linear infinite;
+        }
+
+        @keyframes scrollText {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        /* File Preview Styles */
+        .filePreview {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .filePreview img {
+            max-width: 50px;
+            max-height: 50px;
+            margin-right: 10px;
+        }
+
+        .filePreview video, .filePreview audio {
+            max-width: 200px;
         }
     </style>
 </head>
 <body>
-    <div class="scrolling-text">
-        FRANIZE TECH, MESSAGE ON WHATSAPP TO LEARN +2349154173242
-    </div>
+
+    <!-- Scrolling Info Message -->
+    <div class="scrollingInfo">FRANIZE TECH, MESSAGE ON WHATSAPP TO LEARN +2349154173242</div>
+
     <h1>File Manager</h1>
-    <input type="text" id="searchBar" placeholder="Search files..." onkeyup="searchFiles()">
-    <div id="notification"></div>
-    <div id="fileList"></div>
+    <div id="fileList">
+        <!-- File items will appear here -->
+    </div>
 
-    <button id="uploadButton" class="uploadButton" onclick="showUploadOptions()">+</button>
+    <!-- Upload Button -->
+    <button class="uploadButton" onclick="showUploadOptions()">+</button>
 
-    <!-- Modal for choosing file type -->
-    <div id="uploadOptionsModal" class="modal" style="display: none;">
+    <!-- Upload Options Modal -->
+    <div id="uploadModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeUploadOptions()">&times;</span>
-            <h2>Select File Type to Upload</h2>
-            <button onclick="uploadFile('audio')">Audio</button>
-            <button onclick="uploadFile('image')">Image</button>
-            <button onclick="uploadFile('video')">Video</button>
-            <button onclick="uploadFile('document')">Document</button>
+            <p>Select the type of file to upload:</p>
+            <button onclick="uploadFile('Document')">Document</button>
+            <button onclick="uploadFile('Image')">Image</button>
+            <button onclick="uploadFile('Video')">Video</button>
+            <button onclick="uploadFile('Audio')">Audio</button>
+            <button onclick="closeUploadOptions()">Cancel</button>
         </div>
     </div>
 
-    <!-- File preview modal -->
-    <div id="filePreview">
-        <div id="previewContent"></div>
-        <button onclick="closePreview()">Close Preview</button>
-    </div>
-
-    <!-- Chatbot modal -->
-    <div id="chatbotModal">
-        <h2>Chat with ChatGPT</h2>
-        <div id="chatbotMessages"></div>
-        <input type="text" id="chatbotInput" placeholder="Type your message..." />
-        <button onclick="sendMessage()">Send</button>
-        <span class="close" onclick="closeChatbot()">&times;</span>
-    </div>
-    <button id="chatbotButton" onclick="openChatbot()">💬</button>
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
 
     <script>
-        let files = [];
-        let filesUploaded = false;
+        const fileList = document.getElementById('fileList');
+        const toast = document.getElementById('toast');
 
+        // Show upload options modal
         function showUploadOptions() {
-            document.getElementById('uploadOptionsModal').style.display = 'block';
+            document.getElementById('uploadModal').style.display = 'flex';
         }
 
+        // Close upload options modal
         function closeUploadOptions() {
-            document.getElementById('uploadOptionsModal').style.display = 'none';
+            document.getElementById('uploadModal').style.display = 'none';
         }
 
+        // Simulate file upload
         function uploadFile(type) {
-            const input = document.createElement('input');
-            input.type = 'file';
-            // Set the accept attribute based on selected type
-            switch (type) {
-                case 'audio':
-                    input.accept = '.mp3, .wav, .aac'; // Accept audio files
-                    break;
-                case 'image':
-                    input.accept = '.png, .jpg, .jpeg'; // Accept image files
-                    break;
-                case 'video':
-                    input.accept = '.mp4, .avi, .mov'; // Accept video files
-                    break;
-                case 'document':
-                    input.accept = '.pdf, .doc, .docx, .txt'; // Accept document files
-                    break;
+            const fileName = `${type}File_${Math.floor(Math.random() * 1000)}.${type === 'Document' ? 'pdf' : type === 'Image' ? 'jpg' : type === 'Video' ? 'mp4' : 'mp3'}`;
+            const fileSize = `${(Math.random() * 200).toFixed(2)} MB`; // Random file size
+
+            const fileItem = document.createElement('div');
+            fileItem.className = 'fileItem';
+
+            const name = document.createElement('span');
+            name.className = 'fileName';
+            name.textContent = fileName;
+
+            const size = document.createElement('span');
+            size.className = 'fileSize';
+            size.textContent = fileSize;
+
+            const preview = document.createElement('div');
+            preview.className = 'filePreview';
+            if (type === 'Image') {
+                const img = document.createElement('img');
+                img.src = 'path_to_your_image.jpg'; // Placeholder for the uploaded image
+                preview.appendChild(img);
+            } else if (type === 'Video') {
+                const video = document.createElement('video');
+                video.controls = true;
+                video.src = 'path_to_your_video.mp4'; // Placeholder for the uploaded video
+                preview.appendChild(video);
+            } else if (type === 'Audio') {
+                const audio = document.createElement('audio');
+                audio.controls = true;
+                audio.src = 'path_to_your_audio.mp3'; // Placeholder for the uploaded audio
+                preview.appendChild(audio);
             }
 
-            input.onchange = function() {
-                const file = input.files[0];
-                if (file) {
-                    files.push({ name: file.name, size: file.size, type: file.type });
-                    filesUploaded = true;
-                    displayFiles();
-                    showNotification(`Uploaded: ${file.name}`);
-                }
-            };
+            fileItem.appendChild(name);
+            fileItem.appendChild(size);
+            fileItem.appendChild(preview);
+            fileList.appendChild(fileItem);
 
-            input.click(); // Open the file picker dialog
-            closeUploadOptions(); // Close options modal after selection
+            // Show success toast
+            showToast(`${type} uploaded successfully!`);
+
+            closeUploadOptions();
         }
 
-        function displayFiles() {
-            const fileList = document.getElementById('fileList');
-            fileList.innerHTML = '';
-            files.forEach((file, index) => {
-                const fileItem = document.createElement('div');
-                fileItem.className = 'fileItem';
-
-                const fileName = document.createElement('span');
-                fileName.className = 'fileName';
-                fileName.textContent = file.name;
-                fileName.onclick = () => showPreview(index);
-
-                const fileSize = document.createElement('span');
-                fileSize.className = 'fileSize';
-                fileSize.textContent = `${(file.size / 1024).toFixed(2)} KB`; // Display size in KB
-
-                fileItem.appendChild(fileName);
-                fileItem.appendChild(fileSize);
-                fileList.appendChild(fileItem);
-            });
+        // Display toast message
+        function showToast(message) {
+            toast.textContent = message;
+            toast.className = "toast show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
         }
-
-        function showPreview(index) {
-            const previewContent = document.getElementById('previewContent');
-            const file = files[index];
-
-            previewContent.innerHTML = `
-                <h2>${file.name}</h2>
-                <p>Size: ${(file.size / 1024).toFixed(2)} KB</p>
-                <p>Type: ${file.type}</p>
-            `;
-
-            if (file.type.startsWith('image/')) {
-                previewContent.innerHTML += `<img src="${URL.createObjectURL(new Blob([file]))}" style="max-width: 100%; max-height: 300px;" />`;
-            } else if (file.type.startsWith('video/')) {
-                previewContent.innerHTML += `<video controls style=" max-width: 100%; max-height: 300px;"><source src="${URL.createObjectURL(new Blob([file]))}" type="${file.type}"></video>`;
-            } else if (file.type.startsWith('audio/')) {
-                previewContent.innerHTML += `<audio controls><source src="${URL.createObjectURL(new Blob([file]))}" type="${file.type}"></audio>`;
-            }
-
-            document.getElementById('filePreview').style.display = 'block';
-        }
-
-        function closePreview() {
-            document.getElementById('filePreview').style.display = 'none';
-        }
-
-        function searchFiles() {
-            const query = document.getElementById('searchBar').value.toLowerCase();
-            const fileList = document.getElementById('fileList');
-            const fileItems = fileList.getElementsByClassName('fileItem');
-
-            Array.from(fileItems).forEach(item => {
-                const fileName = item.getElementsByClassName('fileName')[0].textContent.toLowerCase();
-                if (fileName.includes(query)) {
-                    item.style.display = '';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        }
-
-        function showNotification(message) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.style.display = 'block';
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 3000);
-        }
-
-        function openChatbot() {
-            document.getElementById('chatbotModal').style.display = 'block';
-        }
-
-        function closeChatbot() {
-            document.getElementById('chatbotModal').style.display = 'none';
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('chatbotInput');
-            const message = input.value;
-            if (message) {
-                const messagesContainer = document.getElementById('chatbotMessages');
-                const userMessage = document.createElement('div');
-                userMessage.textContent = `You: ${message}`;
-                messagesContainer.appendChild(userMessage);
-                input.value = '';
-
-                // Simulate bot response
-                const botMessage = document.createElement('div');
-                botMessage.textContent = `Bot: (response to "${message}")`; // Here you would typically call your chatbot API
-                messagesContainer.appendChild(botMessage);
-                
-                // Scroll to bottom
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }
-        }
-
-        // Chatbot popup after 30 seconds
-        setTimeout(() => {
-            document.getElementById('chatbotButton').style.display = 'block';
-        }, 30000);
     </script>
 </body>
 </html>
