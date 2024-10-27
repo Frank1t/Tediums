@@ -115,6 +115,11 @@
 
             // Clear file input after upload
             fileInput.value = '';
+
+            // Redirect to the file manager page after a short delay
+            setTimeout(() => {
+                window.location.href = 'filemanager.html'; // Redirect to your file manager page
+            }, 1000); // Adjust the delay as needed
         });
     </script>
 </body>
