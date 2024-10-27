@@ -18,7 +18,6 @@
             font-weight: bold;
         }
 
-        
         #fileList {
             margin-top: 20px;
             max-height: 400px;
@@ -133,7 +132,7 @@
             0% { transform: translateX(100%); }
             100% { transform: translateX(-100%); }
         }
-        
+
         /* File Preview Styles */
         .filePreview {
             display: flex;
@@ -169,10 +168,10 @@
     <div id="uploadModal" class="modal">
         <div class="modal-content">
             <p>Select the type of file to upload:</p>
-            <button onclick="uploadFile('Document')">Document</button>
-            <button onclick="uploadFile('Image')">Image</button>
-            <button onclick="uploadFile('Video')">Video</button>
-            <button onclick="uploadFile('Audio')">Audio</button>
+            <button onclick="openFileSelector('Document')">Document</button>
+            <button onclick="openFileSelector('Image')">Image</button>
+            <button onclick="openFileSelector('Video')">Video</button>
+            <button onclick="openFileSelector('Audio')">Audio</button>
             <button onclick="closeUploadOptions()">Cancel</button>
         </div>
     </div>
@@ -180,9 +179,13 @@
     <!-- Toast Notification -->
     <div id="toast" class="toast"></div>
 
+    <!-- Hidden File Input -->
+    <input type="file" id="fileInput" style="display: none;" accept=".jpg,.jpeg,.png,.pdf,.mp4,.mp3" onchange="handleFileUpload(event)">
+
     <script>
         const fileList = document.getElementById('fileList');
         const toast = document.getElementById('toast');
+        let currentFileType = '';
 
         // Show upload options modal
         function showUploadOptions() {
@@ -194,56 +197,64 @@
             document.getElementById('uploadModal').style.display = 'none';
         }
 
-        // Simulate file upload
-        function uploadFile(type) {
-            const fileName = `${type}File_${Math.floor(Math.random() * 1000)}.${type === 'Document' ? 'pdf' : type === 'Image' ? 'jpg' : type === 'Video' ? 'mp4' : 'mp3'}`;
-            const fileSize = `${(Math.random() * 200).toFixed(2)} MB`; // Random file size
+        // Open file selector for the chosen type
+        function openFileSelector(type) {
+            currentFileType = type; // Store the type of the file being uploaded
+            document.getElementById('fileInput').click(); // Trigger file input
+        }
 
-            const fileItem = document.createElement('div');
-            fileItem.className = 'fileItem';
+        // Handle file upload
+        function handleFileUpload(event) {
+            const file = event.target.files[0]; // Get the uploaded file
+            if (file) {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'fileItem';
 
-            const name = document.createElement('span');
-            name.className = 'fileName';
-            name.textContent = fileName;
+                const name = document.createElement('span');
+                name.className = 'fileName';
+                name.textContent = file.name; // Use the actual file name
 
-            const size = document.createElement('span');
-            size.className = 'fileSize';
-            size.textContent = fileSize;
+                const size = document.createElement('span');
+                size.className = 'fileSize';
+                size.textContent = `${(file.size / 1024).toFixed(2)} KB`; // Display file size in KB
 
-            const preview = document.createElement('div');
-            preview.className = 'filePreview';
-            if (type === 'Image') {
-                const img = document.createElement('img');
-                img.src = 'path_to_your_image.jpg'; // Placeholder for the uploaded image
-                preview.appendChild(img);
-            } else if (type === 'Video') {
-                const video = document.createElement('video');
-                video.controls = true;
-                video.src = 'path_to_your_video.mp4'; // Placeholder for the uploaded video
-                preview.appendChild(video);
-            } else if (type === 'Audio') {
-                const audio = document.createElement('audio');
-                audio.controls = true;
-                audio.src = 'path_to_your_audio.mp3'; // Placeholder for the uploaded audio
-                preview.appendChild(audio);
+                const preview = document.createElement('div');
+                preview.className = 'filePreview';
+                if (currentFileType === 'Image') {
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(file); // Create a URL for the uploaded image
+                    preview.appendChild(img);
+                } else if (currentFileType === 'Video') {
+                    const video = document.createElement('video');
+                    video.controls = true;
+                    video.src = URL.createObjectURL(file); // Create a URL for the uploaded video
+                    preview.appendChild(video);
+                } else if (currentFileType === 'Audio') {
+                    const audio = document.createElement('audio');
+                    audio.controls = true;
+                    audio.src = URL.createObjectURL(file); // Create a URL for the uploaded audio
+                    preview.appendChild(audio);
+                }
+
+                fileItem.appendChild(name);
+                fileItem.appendChild(size);
+                fileItem.appendChild(preview);
+                fileList.appendChild(fileItem);
+
+                // Show success toast
+                showToast(`${file.name} uploaded successfully!`);
+
+                closeUploadOptions(); // Close the modal
             }
-
-            fileItem.appendChild(name);
-            fileItem.appendChild(size);
-            fileItem.appendChild(preview);
-            fileList.appendChild(fileItem);
-
-            // Show success toast
-            showToast(`${type} uploaded successfully!`);
-
-            closeUploadOptions();
         }
 
         // Display toast message
         function showToast(message) {
             toast.textContent = message;
-            toast.className = "toast show";
-            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+            toast.className = 'toast show';
+            setTimeout(() => {
+                toast.className = toast.className.replace('show', '');
+            }, 3000);
         }
     </script>
 </body>
