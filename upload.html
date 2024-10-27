@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -11,9 +11,14 @@
             color: white;
             padding: 20px;
         }
+        h1 {
+            text-align: center;
+        }
         #uploadForm {
             display: flex;
             flex-direction: column;
+            max-width: 400px;
+            margin: auto;
         }
         input[type="file"] {
             margin: 10px 0;
@@ -23,5 +28,94 @@
             background-color: #28a745;
             border: none;
             border-radius: 5px;
-            color
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #fileList {
+            margin-top: 20px;
+        }
+        .fileItem {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px;
+            border-bottom: 1px solid gray;
+        }
+        .fileName {
+            cursor: pointer;
+        }
+        .fileSize {
+            color: gray;
+        }
+        .errorMessage {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
 
+    <h1>Upload Files</h1>
+    <div class="errorMessage" id="errorMessage"></div>
+    <form id="uploadForm">
+        <input type="file" id="fileInput" multiple accept=".jpg, .jpeg, .png, .mp4, .pdf, .mp3" />
+        <button type="submit">Upload</button>
+    </form>
+
+    <div id="fileList">
+        <h2>Uploaded Files:</h2>
+        <!-- Uploaded files will be displayed here -->
+    </div>
+
+    <script>
+        const uploadForm = document.getElementById('uploadForm');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const errorMessage = document.getElementById('errorMessage');
+
+        uploadForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            errorMessage.textContent = ''; // Clear previous error messages
+
+            const files = fileInput.files;
+            if (files.length === 0) {
+                errorMessage.textContent = 'Please select at least one file to upload.';
+                return;
+            }
+
+            // Validate files
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (file.size > 200 * 1024 * 1024) { // Limit: 200 MB
+                    errorMessage.textContent = `File ${file.name} exceeds the size limit of 200 MB.`;
+                    return;
+                }
+            }
+
+            // Display uploaded files
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileItem = document.createElement('div');
+                fileItem.className = 'fileItem';
+
+                const name = document.createElement('span');
+                name.className = 'fileName';
+                name.textContent = file.name;
+
+                const size = document.createElement('span');
+                size.className = 'fileSize';
+                size.textContent = `${(file.size / (1024 * 1024)).toFixed(2)} MB`; // Display size in MB
+
+                fileItem.appendChild(name);
+                fileItem.appendChild(size);
+                fileList.appendChild(fileItem);
+            }
+
+            // Clear file input after upload
+            fileInput.value = '';
+        });
+    </script>
+</body>
+</html>
