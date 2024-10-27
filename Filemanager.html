@@ -1,0 +1,347 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: black;
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+
+        #fileList {
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid white;
+            padding: 10px;
+        }
+
+        .fileItem {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px;
+            border-bottom: 1px solid gray;
+        }
+
+        .fileName {
+            cursor: pointer;
+        }
+
+        .fileSize {
+            color: gray;
+        }
+
+        .uploadButton {
+            font-size: 24px;
+            width: 50px;
+            height: 50px;
+            background-color: #fff; /* Change to your desired color */
+            border: none;
+            border-radius: 50%; /* Circle button */
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            cursor: pointer;
+        }
+
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .scrolling-text {
+            background-color: red;
+            color: white;
+            padding: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            box-shadow: 0 0 10px #fff;
+        }
+
+        #notification {
+            display: none;
+            margin-top: 10px;
+            color: green;
+        }
+
+        #filePreview {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            color: black;
+            padding: 20px;
+            z-index: 1001;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        #chatbotButton {
+            display: none; /* Initially hidden */
+            position: fixed;
+            bottom: 80px;
+            left: 20px;
+            background-color: #fff;
+            border: none;
+            border-radius: 50%; /* Circle button */
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        #chatbotModal {
+            display: none; /* Initially hidden */
+            position: fixed;
+            top: 20%;
+            left: 30%;
+            width: 40%;
+            height: 60%;
+            background-color: white;
+            color: black;
+            border: 1px solid #888;
+            z-index: 1001;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #chatbotMessages {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid black;
+            padding: 10px;
+        }
+
+        #chatbotInput {
+            width: 100%;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="scrolling-text">
+        FRANIZE TECH, MESSAGE ON WHATSAPP TO LEARN +2349154173242
+    </div>
+    <h1>File Manager</h1>
+    <input type="text" id="searchBar" placeholder="Search files..." onkeyup="searchFiles()">
+    <div id="notification"></div>
+    <div id="fileList"></div>
+
+    <button id="uploadButton" class="uploadButton" onclick="showUploadOptions()">+</button>
+
+    <!-- Modal for choosing file type -->
+    <div id="uploadOptionsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeUploadOptions()">&times;</span>
+            <h2>Select File Type to Upload</h2>
+            <button onclick="uploadFile('audio')">Audio</button>
+            <button onclick="uploadFile('image')">Image</button>
+            <button onclick="uploadFile('video')">Video</button>
+            <button onclick="uploadFile('document')">Document</button>
+        </div>
+    </div>
+
+    <!-- File preview modal -->
+    <div id="filePreview">
+        <div id="previewContent"></div>
+        <button onclick="closePreview()">Close Preview</button>
+    </div>
+
+    <!-- Chatbot modal -->
+    <div id="chatbotModal">
+        <h2>Chat with ChatGPT</h2>
+        <div id="chatbotMessages"></div>
+        <input type="text" id="chatbotInput" placeholder="Type your message..." />
+        <button onclick="sendMessage()">Send</button>
+        <span class="close" onclick="closeChatbot()">&times;</span>
+    </div>
+    <button id="chatbotButton" onclick="openChatbot()">💬</button>
+
+    <script>
+        let files = [];
+        let filesUploaded = false;
+
+        function showUploadOptions() {
+            document.getElementById('uploadOptionsModal').style.display = 'block';
+        }
+
+        function closeUploadOptions() {
+            document.getElementById('uploadOptionsModal').style.display = 'none';
+        }
+
+        function uploadFile(type) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            // Set the accept attribute based on selected type
+            switch (type) {
+                case 'audio':
+                    input.accept = '.mp3, .wav, .aac'; // Accept audio files
+                    break;
+                case 'image':
+                    input.accept = '.png, .jpg, .jpeg'; // Accept image files
+                    break;
+                case 'video':
+                    input.accept = '.mp4, .avi, .mov'; // Accept video files
+                    break;
+                case 'document':
+                    input.accept = '.pdf, .doc, .docx, .txt'; // Accept document files
+                    break;
+            }
+
+            input.onchange = function() {
+                const file = input.files[0];
+                if (file) {
+                    files.push({ name: file.name, size: file.size, type: file.type });
+                    filesUploaded = true;
+                    displayFiles();
+                    showNotification(`Uploaded: ${file.name}`);
+                }
+            };
+
+            input.click(); // Open the file picker dialog
+            closeUploadOptions(); // Close options modal after selection
+        }
+
+        function displayFiles() {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+            files.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'fileItem';
+
+                const fileName = document.createElement('span');
+                fileName.className = 'fileName';
+                fileName.textContent = file.name;
+                fileName.onclick = () => showPreview(index);
+
+                const fileSize = document.createElement('span');
+                fileSize.className = 'fileSize';
+                fileSize.textContent = `${(file.size / 1024).toFixed(2)} KB`; // Display size in KB
+
+                fileItem.appendChild(fileName);
+                fileItem.appendChild(fileSize);
+                fileList.appendChild(fileItem);
+            });
+        }
+
+        function showPreview(index) {
+            const previewContent = document.getElementById('previewContent');
+            const file = files[index];
+
+            previewContent.innerHTML = `
+                <h2>${file.name}</h2>
+                <p>Size: ${(file.size / 1024).toFixed(2)} KB</p>
+                <p>Type: ${file.type}</p>
+            `;
+
+            if (file.type.startsWith('image/')) {
+                previewContent.innerHTML += `<img src="${URL.createObjectURL(new Blob([file]))}" style="max-width: 100%; max-height: 300px;" />`;
+            } else if (file.type.startsWith('video/')) {
+                previewContent.innerHTML += `<video controls style=" max-width: 100%; max-height: 300px;"><source src="${URL.createObjectURL(new Blob([file]))}" type="${file.type}"></video>`;
+            } else if (file.type.startsWith('audio/')) {
+                previewContent.innerHTML += `<audio controls><source src="${URL.createObjectURL(new Blob([file]))}" type="${file.type}"></audio>`;
+            }
+
+            document.getElementById('filePreview').style.display = 'block';
+        }
+
+        function closePreview() {
+            document.getElementById('filePreview').style.display = 'none';
+        }
+
+        function searchFiles() {
+            const query = document.getElementById('searchBar').value.toLowerCase();
+            const fileList = document.getElementById('fileList');
+            const fileItems = fileList.getElementsByClassName('fileItem');
+
+            Array.from(fileItems).forEach(item => {
+                const fileName = item.getElementsByClassName('fileName')[0].textContent.toLowerCase();
+                if (fileName.includes(query)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        function openChatbot() {
+            document.getElementById('chatbotModal').style.display = 'block';
+        }
+
+        function closeChatbot() {
+            document.getElementById('chatbotModal').style.display = 'none';
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatbotInput');
+            const message = input.value;
+            if (message) {
+                const messagesContainer = document.getElementById('chatbotMessages');
+                const userMessage = document.createElement('div');
+                userMessage.textContent = `You: ${message}`;
+                messagesContainer.appendChild(userMessage);
+                input.value = '';
+
+                // Simulate bot response
+                const botMessage = document.createElement('div');
+                botMessage.textContent = `Bot: (response to "${message}")`; // Here you would typically call your chatbot API
+                messagesContainer.appendChild(botMessage);
+                
+                // Scroll to bottom
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        }
+
+        // Chatbot popup after 30 seconds
+        setTimeout(() => {
+            document.getElementById('chatbotButton').style.display = 'block';
+        }, 30000);
+    </script>
+</body>
+</html>
